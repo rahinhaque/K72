@@ -3,9 +3,11 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/all";
 import { useRef } from "react";
 
+gsap.registerPlugin(ScrollTrigger);
+
 const Agance = () => {
   const imageDivRef = useRef(null);
-  const imageRef = useRef(null);
+
   const imageArray = [
     "https://k72.ca/images/teamMembers/Carl_480x640.jpg?w=480&h=640&fit=crop&s=f0a84706bc91a6f505e8ad35f520f0b7",
     "https://k72.ca/images/teamMembers/Olivier_480x640.jpg?w=480&h=640&fit=crop&s=c13569c0753117d04f1a93cf7b446d64",
@@ -15,29 +17,33 @@ const Agance = () => {
     "https://k72.ca/images/teamMembers/CAMILLE_480X640_2.jpg?w=480&h=640&fit=crop&s=74317575b2d72fd11c5296615c383e4a",
     "https://k72.ca/images/teamMembers/MEGGIE_480X640_2.jpg?w=480&h=640&fit=crop&s=3604b19f8fc7b40f517954147698d847",
     "https://k72.ca/images/teamMembers/joel_480X640_3.jpg?w=480&h=640&fit=crop&s=1cadbf143b3aa916b1b414464acbb4d6",
-
   ];
-  // console.log(imageArray);
-
-
-  gsap.registerPlugin(ScrollTrigger);
 
   useGSAP(function () {
     gsap.to(imageDivRef.current, {
       scrollTrigger: {
         trigger: imageDivRef.current,
-        markers: true,
-        start: "top 33.6%",
+        start: "top 33.9%",
         end: "top -70%",
         pin: true,
+        pinSpacing: true,
+        pinReparent: true,
+        pinType: "transform",
+        scrub: 1,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
         onUpdate: (element) => {
-         if(element.progress > 0 && element.progress < 1){
-           const imageIndex = Math.round(
-             element.progress * (imageArray.length - 1),
-           );
-           imageRef.current.src = imageArray[imageIndex];
-         }
-        }
+          const imageIndex = Math.min(
+            Math.floor(element.progress * imageArray.length),
+            imageArray.length - 1,
+          );
+
+          // ✅ Toggle opacity — no src swapping, no loading delay
+          const imgs = imageDivRef.current.querySelectorAll("img");
+          imgs.forEach((img, i) => {
+            img.style.opacity = i === imageIndex ? "1" : "0";
+          });
+        },
       },
     });
   });
@@ -49,11 +55,16 @@ const Agance = () => {
           ref={imageDivRef}
           className="h-[20vw] w-[15vw] absolute top-80 left-[30vw] overflow-hidden"
         >
-          <img ref={imageRef}
-            className="rounded-4xl object-cover"
-            src="https://k72.ca/images/teamMembers/Carl_480x640.jpg?w=480&h=640&fit=crop&s=f0a84706bc91a6f505e8ad35f520f0b7"
-            alt=""
-          />
+          {/* ✅ All images rendered & loaded upfront */}
+          {imageArray.map((src, i) => (
+            <img
+              key={i}
+              src={src}
+              className="rounded-4xl object-cover absolute top-0 left-0 w-full h-full"
+              style={{ opacity: i === 0 ? 1 : 0 }}
+              alt=""
+            />
+          ))}
         </div>
 
         <div className="font-[font2] relative">
@@ -72,7 +83,7 @@ const Agance = () => {
               dit non aux gros egos, même le vôtre. Une marque est vivante. Elle
               a des valeurs, une personnalité, une histoire. Si on oublie ça, on
               peut faire de bons chiffres à court terme, mais on la tue à long
-              terme. C’est pour ça qu’on s’engage à donner de la perspective,
+              terme. C'est pour ça qu'on s'engage à donner de la perspective,
               pour bâtir des marques influentes.
             </p>
           </div>
